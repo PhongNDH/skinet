@@ -1,0 +1,22 @@
+[
+   {
+      "Id" :1,
+      "Name" :"Handbags"
+   },
+   {
+      "Id" :2,
+      "Name" :"Hats"
+   },
+   {
+      "Id" :3,
+      "Name" :"Boots"
+   },
+   {
+      "Id" :4,
+      "Name" :"Shoes"
+   },
+   {
+      "Id" :5,
+      "Name" :"Gloves"
+   }
+]

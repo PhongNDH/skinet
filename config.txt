@@ -1,0 +1,38 @@
+
+   # Create config file 
+      - Infrastructure -> Data -> create Config folder -> create config file
+      
+   # Example in config file
+      - public void Configure(EntityTypeBuilder<Product> builder)
+        {
+            builder.Property(p => p.Id).IsRequired();
+            builder.Property(p => p.Name).IsRequired().HasMaxLength(100);
+            builder.Property(p => p.Description).IsRequired();
+            builder.Property(p => p.Price).HasColumnType("decimal(18,2)");
+            builder.Property(p => p.PictureUrl).IsRequired();
+            builder.HasOne(b => b.ProductBrand).WithMany().HasForeignKey(p => p.ProductBrandId);
+            builder.HasOne(b => b.ProductType).WithMany().HasForeignKey(p => p.ProductTypeId);
+        }
+   
+   # In StoreContext.cs
+      - protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        }
+         + ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly()): 
+            -> This method scans the current assembly (the assembly where this code is executed) for classes that implement IEntityTypeConfiguration<TEntity>. It automatically applies the entity type configurations defined in those classes to the model.
+         + base.OnModelCreating(modelBuilder) :
+            -> It calls the OnModelCreating method of the base DbContext class to allow any configurations defined in the base class to be applied.
+            -> After calling the base method, you can then add your own custom model configurations to the modelBuilder instance as needed. 
+               This allows you to further customize the model and entity mappings according to your application's requirements.
+   # Explain
+      - builder.HasOne(b => b.ProductBrand).WithMany().HasForeignKey(p => p.ProductBrandId);
+         + .HasOne(b => b.ProductBrand): This line configures a navigation property relationship between the entity being 
+               configured (represented by builder) and the ProductBrand entity. In this case, it indicates that the current entity has a 
+               navigation property called ProductBrand that points to a related ProductBrand entity.
+         + .WithMany(): This specifies that the relationship is one-to-many, indicating that one ProductBrand entity can be associated 
+               with multiple entities of the current type.
+         + .HasForeignKey(p => p.ProductBrandId): This part of the code specifies that the ProductBrandId property of the current entity is 
+               used as the foreign key to establish the relationship with the ProductBrand entity. This means that the ProductBrandId in the 
+               current entity will reference the primary key of the related ProductBrand entity

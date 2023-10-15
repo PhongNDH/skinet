@@ -1,0 +1,39 @@
+
+
+   # builder.Services.Add...
+      - Transient: A new instance is created every time the service is requested.
+      - Scoped: A single instance is created per scope (typically per HTTP request).
+      - Singleton: A single instance is created for the lifetime of the application.
+
+   # Handling databse migration
+      -  using var scope = app.Services.CreateScope();
+         var services = scope.ServiceProvider;
+         var context = services.GetRequiredService<StoreContext>();
+         var logger = services.GetRequiredService<ILogger<Program>>();
+         try
+         {
+            await context.Database.MigrateAsync();
+         }
+         catch (Exception ex)
+         {
+            logger.LogError(ex, "An error occured during migration");
+         }
+      - Explain
+         +  using var scope = app.Services.CreateScope();: 
+            -> This line creates a new scope within the dependency injection container. This scope is typically used for the duration of an 
+               HTTP request. It's disposed of when it goes out of scope, ensuring that any transient services created within the scope are 
+               properly cleaned up.
+         +  var services = scope.ServiceProvider;:
+            -> This line obtains the IServiceProvider from the scope. The IServiceProvider is used to resolve and access services registered 
+            in the application's dependency injection container.
+         +  var context = services.GetRequiredService<StoreContext>();
+            -> This line uses the IServiceProvider to resolve an instance of the StoreContext. StoreContext is typically your Entity Framework 
+            Core DbContext that is responsible for interacting with the database.
+         +  var logger = services.GetRequiredService<ILogger<Program>>();
+            -> This line resolves an instance of the ILogger<Program>. This logger is used to log information, warnings, and errors during the 
+               migration process.
+         +  The code inside the try block is where the actual migration happens. await context.Database.MigrateAsync(); 
+            is used to apply any pending migrations to the database. It ensures that the database schema is up to date with the latest changes
+            in your Entity Framework Core model.
+         +  If an exception occurs during the migration process, it is caught in the catch block. The exception is logged using the logger to 
+            help with debugging and monitoring

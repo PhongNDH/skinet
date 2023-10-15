@@ -1,0 +1,61 @@
+
+   # See all template of dotnet
+      - dotnet new list
+
+   # Add debug
+      - ctrl shift p -> .NET generate Assets for Build and Debug
+
+   # Create new .NET project
+      - create solution
+         + dotnet new sln 
+      - create new webapi template name backend
+         + dotnet new webapi -n backend
+      - add webapi name backend to solution
+         + dotnet sln add backend 
+
+   # Run .NET project
+      - cd backend 
+      - dotnet run
+      - dotnet watch --> hot reload
+      - dotnet watch --no-hot-reload --> reload whenever new controller is created
+
+   # Http
+      - dotnet dev-certs https
+      - dotnet dev-certs https --trust (clean)
+
+   # Set up entity framework
+      - NuGet
+      - Microsoft.EntityFrameworkCore.Sqlite
+      - Microsoft.EntityFrameworkCore.Design
+      - dotnet tool install --global dotnet-ef --version 7.0.12 // download dotnet ef
+
+   # Create dbContext
+      - Create folder name Data
+      - Create file StoreContext.cs     
+            public class StoreContext : DbContext{
+            public StoreContext(DbContextOptions options) : base(options){}
+            public DbSet<Product> Products { get; set; }
+         }
+
+   # dotnet ef
+      - dotnet ef migrations add InitialCreate 
+      - dotnet ef migrations add InitialCreate -o Data/Migrations
+      - dotnet ef database update
+      - dotnet ef database drop -p Infrastructure -s Api --> drop table
+      - dotnet ef migrations remove -p Infrastructure -s Api
+      - dotnet ef migrations add InitialCreate -p Infrastructure -s Api -o Data/Migrations
+         + -p Infrastructure: This specifies the project where your Entity Framework Core DbContext and migrations are defined. It tells Entity Framework Core where to find the code for interacting with the database.
+         + -s Api: This specifies the startup project. It tells Entity Framework Core which project contains the Startup class (typically an ASP.NET Core application) that configures the application, including the database connection.
+         + -o Data/Migrations: This specifies the output directory for the generated migration files. In this case, it's instructing Entity Framework Core to create the migration files in the "Data/Migrations" directory of the project
+   
+   # Create other project
+      - dotnet new classlib -n Core
+      - dotnet sln add Core
+      - dotnet new classlib -n Infrastructure
+      - dotnet sln add Infrastructure
+      - cd Api -> dotnet add reference ../Infrastructure
+         --> Api has dependencies on the Infrastructure project
+      - cd Infrastructure -> dotnet add reference ../Core
+         --> Infrastructure has dependencies on the Core project
+      - dotnet restore
+      

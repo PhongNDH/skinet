@@ -1,0 +1,49 @@
+
+   # Create file 
+      - Infrastructure/Data
+      - Create StoreContextSeed.cs
+   
+   # Code in StoreContextSeed.cs
+      public static async Task SeedAsync(StoreContext context)
+        {
+            if (!context.ProductBrands.Any())
+            {
+                var brandsData = File.ReadAllText("../Infrastructure/Data/SeedData/brands.json");
+                var brands = JsonSerializer.Deserialize<List<ProductBrand>>(brandsData);
+                context.ProductBrands.AddRange(brands!);
+            }
+            if (!context.ProductTypes.Any())
+            {
+                var typesData = File.ReadAllText("../Infrastructure/Data/SeedData/types.json");
+                var types = JsonSerializer.Deserialize<List<ProductType>>(typesData);
+                context.ProductTypes.AddRange(types!);
+            }
+            if (!context.Products.Any())
+            {
+                var productsData = File.ReadAllText("../Infrastructure/Data/SeedData/products.json");
+                var products = JsonSerializer.Deserialize<List<Product>>(productsData);
+                context.Products.AddRange(products!);
+            }
+            if (context.ChangeTracker.HasChanges())
+                await context.SaveChangesAsync();
+        }
+
+   # Code in Program.cs
+      try
+      {
+         await context.Database.MigrateAsync(); 
+         await StoreContextSeed.SeedAsync(context); --> Updated code
+      }
+      catch (Exception ex)
+      {
+         logger.LogError(ex, "An error occured during migration");
+      }
+
+   # Explain
+      -  context.ProductBrands.Any() 
+         -> It checks whether the ProductBrands table in the database is empty (or doesn't contain any records)
+      -  If the table is empty, it reads data from a JSON file, deserializes it into a list of ProductBrand objects.
+      -  It adds the deserialized ProductBrand objects to the context using context.ProductBrands.AddRange(brands)
+      -  context.ChangeTracker.HasChanges() 
+         -> Checks whether there are pending changes in the ChangeTracker of the Entity Framework Core context. If changes are detected,
+            it proceeds to save those changes to the database using context.SaveChangesAsync()
