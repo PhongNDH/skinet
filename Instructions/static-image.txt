@@ -1,0 +1,40 @@
+
+   # Add ApiUrl to configuration
+      -  appsettings.Development.json -> Add "ApiUrl":"http://localhost:5136/" (see http localhost in Propertys/launchSettings)
+
+   # Resolver of Mapper
+      -  Api -> Helper -> Create ProductUrlResolver.cs
+         +  using AutoMapper;
+            public class ProductUrlResolver : IValueResolver<Product, ProductToReturnDto, string?>
+            {
+               private readonly IConfiguration _config;
+               public ProductUrlResolver(IConfiguration config)
+               {
+                     _config = config;
+               }
+
+               public string? Resolve(Product source, ProductToReturnDto destination, string? destMember, ResolutionContext context)
+               {
+                     if (!string.IsNullOrEmpty(source.PictureUrl))
+                     {
+                        return _config["ApiUrl"] + source.PictureUrl;
+                     }
+                     return null;
+               }
+            }
+         + Explain:
+            *  The ProductUrlResolver implement IValueResolver interface to resolve the value of the PictureUrl property in the Product
+               class and map it to the PictureUrl property in the ProductToReturnDto
+            *  IConfiguration : To access to appsettings.Development.json file
+            *  The Resolve method is required by the IValueResolver interface. It receives several parameters:
+               %  source: The source object (Product) from which the value is being resolved.
+               %  destination: The destination object (ProductToReturnDto) where the resolved value will be assigned.
+               %  destMember: The destination member name (property name) being mapped, although it's not used in this implementation.
+               %  context: The ResolutionContext object that provides additional context and information about the mapping process.
+
+   # In MappingProfile.cs
+      -  Api -> Helper -> MappingProfile.cs
+      -  Add .ForMember(d => d.PictureUrl, o => o.MapFrom<ProductUrlResolver>());
+
+   # In Program.cs 
+      -  Add app.UseStaticFiles() below var app = builder.Build()

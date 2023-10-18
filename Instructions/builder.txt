@@ -5,7 +5,7 @@
       - Scoped: A single instance is created per scope (typically per HTTP request).
       - Singleton: A single instance is created for the lifetime of the application.
 
-   # Handling databse migration
+   # Handling database migration
       -  using var scope = app.Services.CreateScope();
          var services = scope.ServiceProvider;
          var context = services.GetRequiredService<StoreContext>();

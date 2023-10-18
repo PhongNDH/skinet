@@ -6,7 +6,7 @@ namespace Infrastructure.Data
 {
     public class StoreContext : DbContext
     {
-        public StoreContext(DbContextOptions options) : base(options)
+        public StoreContext(DbContextOptions<StoreContext> options) : base(options)
         {
         }
 
@@ -15,11 +15,11 @@ namespace Infrastructure.Data
         public DbSet<ProductType> ProductTypes { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);     
+            base.OnModelCreating(modelBuilder);
             // Add custom entity configurations
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
             // Add additional custom model configurations if necessary
-  
+
         }
 
 

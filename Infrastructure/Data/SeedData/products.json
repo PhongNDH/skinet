@@ -3,7 +3,7 @@
       "Name": "Shockproof Gloves For Sport Motorcycle Bike Riding",
       "Description": "Est consequuntur quia ut aliquam aliquam hic dolorum totam qui sint officiis hic nulla natus sit laudantium dolor! Qui laboriosam porro eos Quis quia sed delectus saepe aut totam nobis.",
       "Price": 25.99,
-      "PictureUrl": "https://s.alicdn.com/@sc04/kf/H155afd97c24c4f60a14f34b6b5994ff6l.jpg_300x300.jpg",
+      "PictureUrl": "images/products/ShockproofGloves.jpg",
       "ProductTypeId": 5,
       "ProductBrandId": 3
    },
@@ -11,7 +11,7 @@
       "Name": "Custom Dress Shoes",
       "Description": "Lorem ipsum dolor sit amet. Qui molestias itaque qui excepturi voluptates ut repellendus quos ea quas nesciunt vel suscipit eaque aut itaque reiciendis qui magni voluptatibus.",
       "Price": 17.49,
-      "PictureUrl": "https://images.meesho.com/images/products/17570565/580b8_512.jpg",
+      "PictureUrl": "images/products/CustomDressShoes.jpg",
       "ProductTypeId": 4,
       "ProductBrandId": 3
    },
@@ -19,7 +19,7 @@
       "Name": "Signature Cap in Deliciae",
       "Description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Cras fermentum odio eu feugiat pretium. Et malesuada fames ac turpis egestas.",
       "Price": 21.99,
-      "PictureUrl": "https://varcityunltd.com/cdn/shop/files/3B622648-5715-477F-B164-890272668DD9_5000x.jpg",
+      "PictureUrl": "images/products/SignatureCap.jpg",
       "ProductTypeId": 2,
       "ProductBrandId": 6
    },
@@ -27,7 +27,7 @@
       "Name": "The Vancouver Hangbag",
       "Description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. At lectus urna duis convallis. Platea dictumst quisque sagittis purus sit amet volutpat consequat mauris.",
       "Price": 14.99,
-      "PictureUrl": "https://demellierlondon.com/cdn/shop/products/the-vancouver-crossbody-bag-black-smooth-1.jpg",
+      "PictureUrl": "images/products/VancouverHangbag.jpg",
       "ProductTypeId": 1,
       "ProductBrandId": 7
    },
@@ -35,7 +35,7 @@
       "Name": "Sophia Chain Couture Boots",
       "Description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Curabitur vitae nunc sed velit dignissim sodales. Id porta nibh venenatis cras sed felis eget velit aliquet.",
       "Price": 17.49,
-      "PictureUrl": "https://product.hstatic.net/200000054280/product/449_aae6e099006648bba8dda3ca1b12472b.jpg",
+      "PictureUrl": "images/products/SophiaChainBoots.jpg",
       "ProductTypeId": 3,
       "ProductBrandId": 1
    }

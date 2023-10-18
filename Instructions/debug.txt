@@ -1,0 +1,22 @@
+   
+   
+   #  Add debug
+      -  ctrl shift p -> .NET generate Assets for Build and Debug
+   
+   #  Debug points
+      - Add debug point
+
+   #  Debug
+      -  Run app by dotnet --no-hot-reload
+      -  Ctrl + shift + D (or Click Debug Icon)
+      -  Change to .NET Core Attach
+      -  Click Run (or F5)
+      -  Choose Process to attach to (Api for instance)
+      -  Call Api by Postman or Swagger to run debug
+
+
+   #  Fearture
+      -  Continue (or F5)        --> Move to next break point
+      -  Step into (F11)         --> Step into paticular method
+      -  Step out (shift + F11)  --> Contrary to Step into
+      -  Step over (F10)         --> Step to next line

@@ -1,0 +1,18 @@
+ 
+
+   #  Up code to github
+      -  git status
+      -  git init
+      -  git branch -m main
+      -  dotnet new gitignore
+      -  git remote add origin https://github.com/PhongNDH/skinet.git
+      -  git push origin main
+
+   #  Update code 
+      -  Way 1
+         +  Click to Source Control Icon of the left Nav (or Ctrl Shift G)
+         +  Click to plus button of Change item too add Item to commit
+      -  Way 2
+         +  git add .
+         +  git commit -m "..."
+         +  git push origin main

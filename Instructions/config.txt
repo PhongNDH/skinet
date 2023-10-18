@@ -26,6 +26,7 @@
             -> It calls the OnModelCreating method of the base DbContext class to allow any configurations defined in the base class to be applied.
             -> After calling the base method, you can then add your own custom model configurations to the modelBuilder instance as needed. 
                This allows you to further customize the model and entity mappings according to your application's requirements.
+   
    # Explain
       - builder.HasOne(b => b.ProductBrand).WithMany().HasForeignKey(p => p.ProductBrandId);
          + .HasOne(b => b.ProductBrand): This line configures a navigation property relationship between the entity being 

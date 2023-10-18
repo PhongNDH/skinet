@@ -1,0 +1,80 @@
+
+
+// Example for Product Object
+
+   #  Create Object
+      -  Api -> create Dtos folder -> create DisplayObject (ProductToReturnDto)
+   
+   #  In Controllers
+      -  public async Task<ActionResult<ProductToReturnDto?>> GetProduct(int id)
+         {
+               var spec = new ProductsWithTypesAndBrandsSpecification(id);
+               var product = await _productRepo.GetEntityWithSpec(spec);
+               return new ProductToReturnDto
+               {
+                  Id = product!.Id,
+                  Name = product.Name,
+                  Description = product.Description,
+                  PictureUrl = product.PictureUrl,
+                  Price = product.Price,
+                  ProductBrand = product.ProductBrand!.Name,
+                  ProductType = product.ProductType!.Name,
+               };
+         }
+      -  public async Task<ActionResult<List<ProductToReturnDto>>> GetProducts()
+         {
+               var spec = new ProductsWithTypesAndBrandsSpecification();
+               var products = await _productRepo.ListAsync(spec);
+               return products.Select(product => new ProductToReturnDto
+               {
+                  Id = product!.Id,
+                  Name = product.Name,
+                  Description = product.Description,
+                  PictureUrl = product.PictureUrl,
+                  Price = product.Price,
+                  ProductBrand = product.ProductBrand!.Name,
+                  ProductType = product.ProductType!.Name,
+               }).ToList(); //Mapping Product entities to a list of ProductToReturnDto objects
+         }
+      
+   # Auto Mapper Tools
+      -  Nuget -> AutoMapper.Extensions.Microsoft.DependencyInjection
+      -  Api -> Create Helpers folder -> Create MappingProfile.cs
+         +  public class MappingProfile : Profile
+            {
+               public MappingProfile()
+               {
+                     //CreateMap<Product, ProductToReturnDto>() configures AutoMapper to map properties from the Product class to the corresponding properties in the ProductToReturnDto class.
+                     CreateMap<Product, ProductToReturnDto>()
+                        .ForMember(d => d.ProductBrand, o => o.MapFrom(s => s.ProductBrand!.Name))
+                        .ForMember(d => d.ProductType, o => o.MapFrom(s => s.ProductType!.Name));
+                     //ForMember(d => d.ProductBrand, o => o.MapFrom(s => s.ProductBrand!.Name)) specifies that the ProductBrand property in the ProductToReturnDto should be 
+                     //mapped from the Name property of the ProductBrand navigation property of the Product entity. It's a way to map properties that don't have the same name.
+               }
+            }
+      -  Go to Program.cs
+         +  Add builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies()) before var app = builder.Build()
+      -  In Controller
+         +  private readonly IMapper _mapper;
+            public ProductsController(IMapper mapper)
+            {
+               _mapper = mapper;
+            }
+
+            public async Task<ActionResult<ProductToReturnDto?>> GetProduct(int id)
+            {
+               var spec = new ProductsWithTypesAndBrandsSpecification(id);
+               var product = await _productRepo.GetEntityWithSpec(spec);
+               if (product == null)
+               {
+                  return NotFound();
+               }
+               return _mapper.Map<Product, ProductToReturnDto>(product);
+            }
+            public async Task<ActionResult<IReadOnlyList<ProductToReturnDto>>> GetProducts()
+            {
+            var spec = new ProductsWithTypesAndBrandsSpecification();
+            var products = await _productRepo.ListAsync(spec);
+            return Ok(_mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductToReturnDto>>(products));
+        }
+

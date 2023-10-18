@@ -1,9 +1,0 @@
- 
-
-   # Up code to github
-      - git status
-      - git init
-      - git branch -m main
-      - dotnet new gitignore
-      - git remote add origin https://github.com/PhongNDH/skinet.git
-      - git push origin main

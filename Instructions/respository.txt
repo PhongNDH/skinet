@@ -1,0 +1,87 @@
+
+   #  Create interface
+      -  Core -> Create Interface folder -> create Interface file
+      -  Example
+            public interface IProductRespository
+            {
+               Task<Product?> GetProductByIdAsync(int id);
+               Task<IReadOnlyList<Product>> GetProductsAsync();
+               Task<IReadOnlyList<ProductBrand>> GetProductBrandsAsync();
+               Task<IReadOnlyList<ProductType>> GetProductTypesAsync();
+            }
+   
+   #  Create Repository
+      -  Infrastructure -> Data -> Repository file
+      -  Example
+            public class ProductRespository : IProductRespository
+            {
+               private readonly StoreContext _context;
+               public ProductRespository(StoreContext context)
+               {
+                     _context = context;
+               }
+
+               public async Task<IReadOnlyList<ProductBrand>> GetProductBrandsAsync()
+               {
+                     return await _context.ProductBrands.ToListAsync();
+               }
+
+               public async Task<Product?> GetProductByIdAsync(int id)
+               {
+                     return await _context.Products
+                     .Include(p => p.ProductBrand)
+                     .Include(p => p.ProductType)
+                     .FirstOrDefaultAsync(p => p.Id == id);
+                     //.FindAsync(id);
+               }
+
+               public async Task<IReadOnlyList<Product>> GetProductsAsync()
+               {
+                     return await _context.Products
+                     .Include(p => p.ProductBrand)
+                     .Include(p => p.ProductType).ToListAsync();
+               }
+
+               public async Task<IReadOnlyList<ProductType>> GetProductTypesAsync()
+               {
+                     return await _context.ProductTypes.ToListAsync();
+               }
+            }
+      - Explain 
+         + .Include(p => p.ProductBrand):
+            -> These lines specify that when you retrieve a product, you also want to eagerly load related entities, specifically the ProductBrand 
+               and ProductType. Eager loading ensures that the related entities are loaded along with the main entity to avoid additional 
+               database queries when accessing related data.
+         + The ProductRespository class provides methods for querying and fetching product-related data from the database, and it leverages Entity 
+            Framework Core for efficient data access.    
+
+   #  Change code in Controller
+      -  Example in ProductController
+            private readonly IProductRespository _repo;
+            public ProductsController(IProductRespository repo) // Dependency Injection
+            {
+               _repo = repo;
+            }
+            [HttpGet]
+            public async Task<ActionResult<List<Product>>> GetProducts()
+            {
+               var products = await _repo.GetProductsAsync();
+               return Ok(products);  // return an HTTP 200 (OK)
+            }
+            [HttpGet("{id}")]
+            public async Task<ActionResult<Product?>> GetProduct(int id)
+            {
+               return await _repo.GetProductByIdAsync(id);
+            }
+            [HttpGet("brands")]
+            public async Task<ActionResult<IReadOnlyList<ProductBrand>>> GetProductBrands()
+            {
+               return Ok(await _repo.GetProductBrandsAsync());
+            }
+            [HttpGet("types")]
+            public async Task<ActionResult<IReadOnlyList<ProductType>>> GetProductTypes()
+            {
+               return Ok(await _repo.GetProductTypesAsync());
+            }
+      -  Explain
+         +  Ok is a method in ASP.NET Core that returns an HTTP 200 (OK) response with the specified content.

@@ -18,7 +18,9 @@ builder.Services.AddDbContext<StoreContext>(otp =>
     otp.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-builder.Services.AddScoped<IProductRespository, ProductRespository>();
+builder.Services.AddScoped<IProductRespository, ProductRespository>(); // Has Product type
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 var app = builder.Build();
 
@@ -28,6 +30,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseStaticFiles();
 
 app.UseHttpsRedirection();
 
@@ -41,8 +45,8 @@ var context = services.GetRequiredService<StoreContext>(); // Resolve an instanc
 var logger = services.GetRequiredService<ILogger<Program>>(); // Resolve an instance of the ILogger<Program>
 try
 {
-    await context.Database.MigrateAsync(); //A pply any pending migrations
-    await StoreContextSeed.SeedAsync(context);
+    await context.Database.MigrateAsync(); //Apply any pending migrations
+    await StoreContextSeed.SeedAsync(context); // Seed data on first times
 }
 catch (Exception ex)
 {
