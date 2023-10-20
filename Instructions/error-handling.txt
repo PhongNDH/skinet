@@ -1,0 +1,182 @@
+
+
+   #  Create BaseApiController 
+      -  Other Controller Extend from BaseApiController
+      -  [ApiController]
+         [Route("api/[controller]")]
+         public class BaseApiController : ControllerBase{}
+
+   #  Create Error folder
+      -  Api -> create Error folder
+      -  Create ApiResponse.cs
+         +  public class ApiResponse
+            {
+               public int StatusCode { get; set; }
+               public string? Message { get; set; }
+               public ApiResponse(int statusCode, string? message = null)
+               {
+                     StatusCode = statusCode;
+                     Message = message ?? GetDefaultMessageForStatusCode(statusCode);
+               }
+               private static string? GetDefaultMessageForStatusCode(int statusCode)
+               {
+                     return statusCode switch
+                     {
+                        400 => "A bab request, you have made",
+                        401 => "Authorized, you are not",
+                        404 => "Resource found, it was not",
+                        500 => "Errors are the path to dark side. Error leads to anger. Anger leads to hate. Hate leads to carreer change",
+                        _ => null
+                     };
+               }
+            }
+         -  Create ApiException.cs  
+            +  Deal with wrong api
+            +  namespace Api.Errors
+               {
+                  public class ApiException : ApiResponse
+                  {
+                     public ApiException(int statusCode, string? message = null, string? details = null) : base(statusCode, message)
+                     {
+                           Details = details;
+                     }
+
+                     public string? Details { get; set; }
+                  }
+               }
+         -  ApiValidationErrorResponse.cs
+            +  public class ApiValidationErrorResponse : ApiResponse
+               {
+                  public ApiValidationErrorResponse() : base(400)
+                  {
+                  }
+                  public IEnumerable<string>? Errors {get; set;}
+               }
+            +  It's designed to be used when there are validation errors in API requests, and it includes an HTTP status code of 400 
+               (Bad Request) along with a collection of error messages in the Errors property
+   
+   #  Create BuggyController
+      -  public class BuggyController : BaseApiController
+         {
+            private readonly StoreContext _context;
+            public BuggyController(StoreContext context)
+            {
+                  this._context = context;
+            }
+            [HttpGet("notfound")]
+            public ActionResult GetNotFoundRequest()
+            {
+                  var thing = _context.Products.Find(42);
+                  if(thing == null){
+                     return NotFound(new ApiResponse(404));
+                  }
+                  return Ok();
+            }
+            [HttpGet("servererror")]
+            public ActionResult GetServerError()
+            {
+                  var thing = _context.Products.Find(42);
+                  var thingToReturn = thing.ToString(); //since thing is null -> generate error
+                  return Ok();
+            }
+            [HttpGet("badrequest")]
+            public ActionResult GetBabRequest()
+            {
+                  return BadRequest(new ApiResponse(400));
+            }
+            [HttpGet("badrequest/{id}")]
+            public ActionResult GetNotFoundRequest(int id)
+            {
+                  return Ok();
+            }
+         }
+
+   #  Create ErrorController.cs
+      -  [Route("errors/{code}")]
+         [ApiExplorerSettings(IgnoreApi = true)]
+         public class ErrorController : BaseApiController
+         {
+            public IActionResult Error(int code){
+               return new ObjectResult(new ApiResponse(code));
+            }
+         }
+      -  [ApiExplorerSettings(IgnoreApi = true)] indicate that the action should be ignored by API documentation and not be included in API documentation 
+         tools like Swagger or other auto-generating documentation tools.
+      -  In Program.cs -> Add app.UseStatusCodePagesWithReExecute("/errors/{0}") after var app = builder.Build() 
+
+   #  Add Middleware
+      -  Api -> create Middleware folder -> create ExceptionMiddleware.cs
+      -  Handle requests and responses in a pipeline, allowing you to insert custom logic at various stages of the request/response processing
+      -  public class ExceptionMiddleware
+         {
+            private readonly RequestDelegate _next;
+            private readonly ILogger<ExceptionMiddleware> _logger;
+            private readonly IHostEnvironment _env;
+            public ExceptionMiddleware(
+                  RequestDelegate next,
+                  ILogger<ExceptionMiddleware> logger,
+                  IHostEnvironment env
+            )
+            {
+                  _env = env;
+                  _logger = logger;
+                  _next = next;
+            }
+            public async Task InvokeAsync(HttpContext httpContext)
+            {
+               try
+               {
+                  await _next(httpContext);
+               }
+               catch (Exception ex)
+               {
+                  _logger.LogError(ex, ex.Message);
+                  httpContext.Response.ContentType = "application/json";
+                  httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                  var response = _env.IsDevelopment()
+                     ? new ApiException(
+                        (int)HttpStatusCode.InternalServerError,
+                        ex.Message,
+                        ex.StackTrace?.ToString()
+                     )
+                     : new ApiResponse((int)HttpStatusCode.InternalServerError);
+                  var options = new JsonSerializerOptions{PropertyNamingPolicy = JsonNamingPolicy.CamelCase};
+                  var json = JsonSerializer.Serialize(response, options);
+                  await httpContext.Response.WriteAsync(json);
+               }
+            }
+         }
+      -  Explain
+         +  RequestDelegate next: This is a delegate that represents the next middleware in the pipeline.
+         +  ILogger<ExceptionMiddleware> logger: It's used to log exceptions.
+         +  IHostEnvironment env: It provides information about the hosting environment.
+         +  The InvokeAsync method is the entry point for the middleware, and it's executed for each HTTP request.
+         +  Exception Handling:
+            *  When an exception is caught, it is logged using the provided logger.
+            *  The HTTP response status code is set to 500 (Internal Server Error), and the content type is set to JSON.
+      - Program.cs -> Add app.UseMiddleware<ExceptionMiddleware>() after var app = builder.Build()
+
+   # In Program.cs
+      - Before var app = builder.Build()
+         +  builder.Services.Configure<ApiBehaviorOptions>(options =>
+            {
+               options.InvalidModelStateResponseFactory = actionContext =>
+               {
+                     var error = actionContext.ModelState
+                        .Where(e => e.Value?.Errors.Count > 0)
+                        .SelectMany(x => x.Value!.Errors)
+                        .Select(x => x.ErrorMessage)
+                        .ToArray();
+                     var errorResponse = new ApiValidationErrorResponse { Errors = error };
+                     return new BadRequestObjectResult(errorResponse);
+               };
+            });   
+      -  Configures the ApiBehaviorOptions in an ASP.NET Core application to customize the way the application handles invalid model states, typically in 
+         the context of a web API
+      -  InvalidModelStateResponseFactory property of the ApiBehaviorOptions. This property is a delegate that allows you to customize the response when 
+         model validation fails.     
+      -  It checks the actionContext.ModelState for errors. ModelState is a dictionary that contains validation errors associated with request data.
+      -  It filters out model state entries where there are errors.
+      -  It selects the error messages and puts them into an array.
+      -  It constructs an ApiValidationErrorResponse object, presumably a custom class, and sets the Errors property to the array of error messages.
+      -  Finally, it returns a BadRequestObjectResult with the errorResponse as the content.

@@ -1,0 +1,66 @@
+
+   #  Create Extension
+      -  Api -> Create Extension folder -> Create ApplicationServicesExtensions.cs
+
+   # In ApplicationServicesExtensions.cs
+      -  public static class ApplicationServicesExtensions
+         {
+            public static IServiceCollection AddApplicationServices(
+                  this IServiceCollection services,
+                  IConfiguration config
+            )
+            {
+                   Learn more about configuring Swagger/OpenAPI at https:aka.ms/aspnetcore/swashbuckle
+                  services.AddEndpointsApiExplorer();  builder.Services
+                  services.AddSwaggerGen();
+
+                  ? Connect to db
+                  services.AddDbContext<StoreContext>(otp =>
+                  {
+                     otp.UseSqlite(config.GetConnectionString("DefaultConnection"));
+                      builder.configuration
+                  });
+
+                  services.AddScoped<IProductRespository, ProductRespository>();  Has Product type
+                  services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+                  services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+                  services.Configure<ApiBehaviorOptions>(options =>
+                  {
+                     options.InvalidModelStateResponseFactory = actionContext =>
+                     {
+                        var error = actionContext.ModelState
+                              .Where(e => e.Value?.Errors.Count > 0)
+                              .SelectMany(x => x.Value!.Errors)
+                              .Select(x => x.ErrorMessage)
+                              .ToArray();
+                        var errorResponse = new ApiValidationErrorResponse { Errors = error };
+                        return new BadRequestObjectResult(errorResponse);
+                     };
+                  });
+                  return services;
+            }
+         }
+      -  Above code is use for subtituting this code in Program.cs (code between var app = builder.Build() and builder.Services.AddControllers() ): 
+         +  builder.Services.AddSwaggerGen();
+            ? Connect to db
+            builder.Services.AddDbContext<StoreContext>(otp =>
+            {
+               otp.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
+            });
+            builder.Services.AddScoped<IProductRespository, ProductRespository>();  Has Product type
+            builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            builder.Services.Configure<ApiBehaviorOptions>(options =>
+            {
+               options.InvalidModelStateResponseFactory = actionContext =>
+               {
+                     var error = actionContext.ModelState
+                        .Where(e => e.Value?.Errors.Count > 0)
+                        .SelectMany(x => x.Value!.Errors)
+                        .Select(x => x.ErrorMessage)
+                        .ToArray();
+                     var errorResponse = new ApiValidationErrorResponse { Errors = error };
+                     return new BadRequestObjectResult(errorResponse);
+               };
+            });
+      -  In Program.
