@@ -1,0 +1,30 @@
+
+   #  Create Parameter file for public async Task<ActionResult<Pagination<ProductToReturnDto>>> GetProducts method in ProductsController.cs\
+      -  Core -> Specification -> ProductSpecParams.cs
+      -  public class ProductSpecParams
+         {
+            private const int MaxPageSize = 50;
+            public int PageIndex { get; set; } = 1;
+            private int _pageSize = 4;
+            public int PageSize
+            {
+                  get => _pageSize;
+                  set => _pageSize = (value > MaxPageSize) ? MaxPageSize : value;
+            }
+            public int? BrandId { get; set; }
+            public int? TypeId { get; set; }
+            public string? Sort { get; set; }
+            private string _search="";
+            public string Search
+            {
+                  get => _search;
+                  set => _search = value.ToLower();
+            }
+         }
+      -  In ProductController.cs
+         +  public async Task<ActionResult<Pagination<ProductToReturnDto>>> GetProducts(
+               [FromQuery] ProductSpecParams productParams
+            )
+         +  [FromQuery] ProductSpecParams productParams: This parameter is decorated with [FromQuery], which means that it will be bound from the 
+            query string of the HTTP request. ProductSpecParams is a class or structure that represents query parameters for filtering and paginating 
+            the products. The action will accept these parameters from the query string of the URL.

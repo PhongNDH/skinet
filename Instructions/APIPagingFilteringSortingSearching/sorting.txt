@@ -1,0 +1,69 @@
+
+   #  Generic
+      -  In Core -> Specification -> ISpecification.cs, Add 
+         +  Expression<Func<T, object>>? OrderBy { get; }
+         +  Expression<Func<T, object>>? OrderByDescending { get; }
+      - In BaseSpecification.cs, Add :
+         +  public Expression<Func<T, object>>? OrderBy { get; private set; }
+         +  public Expression<Func<T, object>>? OrderByDescending { get; private set; }
+         +  protected void AddOrderBy(Expression<Func<T, object>> orderByExpression)
+            {
+                  OrderBy = orderByExpression;
+            }
+         +  protected void AddOrderByDescending(Expression<Func<T, object>> orderByDescExpression)
+            {
+                  OrderBy = orderByDescExpression;
+            }
+      -  In Infrastructure -> Data -> SpecificationEvaluator.cs ,Add
+         +  if (spec.OrderBy != null)
+            {
+                query = query.OrderBy(spec.OrderBy);
+            }
+            if (spec.OrderByDescending != null)
+            {
+                query = query.OrderBy(spec.OrderByDescending);
+            }
+         +  To  public static IQueryable<TEntity> GetQuery(IQueryable<TEntity> inputQuery,ISpecification<TEntity> spec)
+      -  In  Core -> Specification -> ProductsWithTypesAndBrandsSpecification.cs, Add
+         +  Add string sort parameter to public ProductsWithTypesAndBrandsSpecification()
+            -> become public ProductsWithTypesAndBrandsSpecification(string sort)
+         +  if (!string.IsNullOrEmpty(sort))
+            {
+                switch (sort)
+                {
+                    case "priceAsc":
+                        AddOrderBy(p => p.Price);
+                        break;
+                    case "priceDesc":
+                        AddOrderByDescending(p => p.Price);
+                        break;
+                    default:
+                        AddOrderBy(n => n.Name!);
+                        break;
+               }
+            }
+      -  In Api -> ProductController.cs, Add
+         +  string sort parameter to public async Task<ActionResult<IReadOnlyList<ProductToReturnDto>>> GetProducts(string? sort)
+            -> ActionResult<IReadOnlyList<Product>>public async Task<ActionResult<IReadOnlyList<ProductToReturnDto>>> GetProducts(string? sort)
+            -> sort is query, example : http://localhost:5136/api/products?sort=priceAsc
+         +  string sort parameter to ProductsWithTypesAndBrandsSpecification()
+            -> ProductsWithTypesAndBrandsSpecification(sort)
+
+   # Fix bug : Sqlite can not sort "decimal" type
+      -  Example in Infrastructure -> Data -> StoreContext.cs -> protected override void OnModelCreating
+         +  if (Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite")
+            {
+               foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+               {
+                  var properties = entityType.ClrType
+                     .GetProperties()
+                     .Where(p => p.PropertyType == typeof(decimal));
+                  foreach (var property in properties)
+                  {
+                     modelBuilder
+                        .Entity(entityType.Name)
+                        .Property(property.Name)
+                        .HasConversion<double>();
+                  }
+               }
+            }

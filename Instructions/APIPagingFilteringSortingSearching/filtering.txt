@@ -1,0 +1,27 @@
+
+
+   #  In ProductControl.cs
+      -  Update to
+         +  public async Task<ActionResult<Pagination<ProductToReturnDto>>> GetProducts(
+            [FromQuery] ProductSpecParams productParams
+        )
+        {
+            var spec = new ProductsWithTypesAndBrandsSpecification(productParams);
+            var products = await _productRepo.ListAsync(spec);
+            return Ok(
+               _mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductToReturnDto>>(products)
+            );
+        }
+
+   #  In Core -> Specification -> ProductsWithTypesAndBrandsSpecification.cs
+      -  Update to
+         +  public ProductsWithTypesAndBrandsSpecification(ProductSpecParams productParams)
+            : base(
+                x =>
+                     (
+                        !productParams.BrandId.HasValue || x.ProductBrandId == productParams.BrandId
+                     )
+                    && (!productParams.TypeId.HasValue || x.ProductTypeId == productParams.TypeId)
+            )
+        
+   

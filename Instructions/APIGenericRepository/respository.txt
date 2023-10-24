@@ -2,7 +2,7 @@
    #  Create interface
       -  Core -> Create Interface folder -> create Interface file
       -  Example
-            public interface IProductRespository
+            public interface IProductRepository
             {
                Task<Product?> GetProductByIdAsync(int id);
                Task<IReadOnlyList<Product>> GetProductsAsync();
@@ -13,7 +13,7 @@
    #  Create Repository
       -  Infrastructure -> Data -> Repository file
       -  Example
-            public class ProductRespository : IProductRespository
+            public class ProductRepository : IProductRepository
             {
                private readonly StoreContext _context;
                public ProductRespository(StoreContext context)
@@ -52,13 +52,13 @@
             -> These lines specify that when you retrieve a product, you also want to eagerly load related entities, specifically the ProductBrand 
                and ProductType. Eager loading ensures that the related entities are loaded along with the main entity to avoid additional 
                database queries when accessing related data.
-         + The ProductRespository class provides methods for querying and fetching product-related data from the database, and it leverages Entity 
+         + The ProductRepository class provides methods for querying and fetching product-related data from the database, and it leverages Entity 
             Framework Core for efficient data access.    
 
    #  Change code in Controller
       -  Example in ProductController
-            private readonly IProductRespository _repo;
-            public ProductsController(IProductRespository repo) // Dependency Injection
+            private readonly IProductRepository _repo;
+            public ProductsController(IProductRepository repo) // Dependency Injection
             {
                _repo = repo;
             }

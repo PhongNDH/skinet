@@ -1,0 +1,94 @@
+
+   # In Core -> Specification -> ISpecification.cs, add :
+      -  int Take { get; }
+         int Skip { get; }
+         bool IsPagingEnabled { get; }
+
+   # In Core -> Specification -> BaseSpecification.cs, add :
+      -  public int Take { get; private set; }
+         public int Skip { get; private set; }
+         public bool IsPagingEnabled { get; private set; }
+         protected void ApplyPaging(int skip, int take)
+         {
+            Skip = skip;
+            Take = take;
+            IsPagingEnabled = true;
+         }
+   
+   #  In Infrastructure -> Data -> SpecificationEvaluator.cs
+      -  In public static IQueryable<TEntity> GetQuery(
+            IQueryable<TEntity> inputQuery,
+            ISpecification<TEntity> spec
+        ), add :
+         +   if (spec.IsPagingEnabled)
+            {
+                query = query.Skip(spec.Skip).Take(spec.Take);
+            }
+
+   #  In Infrastructure -> Data -> ProductsWithTypesAndBrandsSpecification.cs, add :
+      -  ApplyPaging(
+            productParams.PageSize * (productParams.PageIndex - 1),
+            productParams.PageSize
+         );
+         below AddInclude(x => x.ProductBrand!);
+
+   #  Create Pagination.cs to store object to show in api of GetProducts() (in ProductController)
+      -  Api -> Helpers -> create Pagination.cs
+      -  public class Pagination<T>
+         where T : class
+         {
+            public Pagination(int pageIndex, int pageSize, int count, IReadOnlyList<T> data)
+            {
+            PageIndex = pageIndex;
+            PageSize = pageSize;
+            Count = count;
+            Data = data;
+            }
+            public int PageIndex { get; set; }
+            public int PageSize { get; set; }
+            public int Count { get; set; }
+            public IReadOnlyList<T> Data { get; set; }
+         }
+   
+   #  In Core -> Interface -> IGenericRepository.cs, add :
+      -  Task<int> CountAsync(ISpecification<T> spec);
+   
+   #  In Infrastructure -> Data -> GenericRepository.cs, add :
+      -  public async Task<int> CountAsync(ISpecification<T> spec)
+         {
+            return await ApplySpecification(spec).CountAsync();
+         }
+
+   # Create class ProductWithFiltersForCountSpecification.cs
+      -  Api -> Specification -> create ProductWithFiltersForCountSpecification.cs
+      -  public class ProductWithFiltersForCountSpecification : BaseSpecification<Product>
+         {
+            public ProductWithFiltersForCountSpecification(ProductSpecParams productParams)
+                  : base(
+                     x =>
+                        (
+                              string.IsNullOrEmpty(productParams.Search)
+                              || x.Name!.ToLower().Contains(productParams.Search)
+                        )
+                        && (
+                              !productParams.BrandId.HasValue || x.ProductBrandId == productParams.BrandId
+                        )
+                        && (!productParams.TypeId.HasValue || x.ProductTypeId == productParams.TypeId)
+                  ) { }
+         }
+
+   # In ProductController, update to :
+      -  public async Task<ActionResult<Pagination<ProductToReturnDto>>> GetProducts(
+            [FromQuery] ProductSpecParams productParams
+        )
+        {
+            var spec = new ProductsWithTypesAndBrandsSpecification(productParams);
+            var countSpec = new ProductWithFiltersForCountSpecification(productParams);
+            var totalItems = await _productRepo.CountAsync(countSpec);
+            var products = await _productRepo.ListAsync(spec);
+            var data = _mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductToReturnDto>>(products);
+            return Ok(
+                new Pagination<ProductToReturnDto>(productParams.PageIndex, productParams.PageSize, totalItems, data)
+            );
+        }
+   

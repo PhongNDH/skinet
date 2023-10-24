@@ -15,8 +15,8 @@
       -  Call Api by Postman or Swagger to run debug
 
 
-   #  Fearture
+   #  Feature
       -  Continue (or F5)        --> Move to next break point
-      -  Step into (F11)         --> Step into paticular method
+      -  Step into (F11)         --> Step into particular method
       -  Step out (shift + F11)  --> Contrary to Step into
       -  Step over (F10)         --> Step to next line

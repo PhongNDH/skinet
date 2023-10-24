@@ -24,7 +24,7 @@ namespace Api.Extensions
                 // builder.configuration
             });
 
-            services.AddScoped<IProductRespository, ProductRespository>(); // Has Product type
+            services.AddScoped<IProductRepository, ProductRepository>(); // Has Product type
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             services.Configure<ApiBehaviorOptions>(options =>
@@ -40,6 +40,13 @@ namespace Api.Extensions
                     return new BadRequestObjectResult(errorResponse);
                 };
             });
+
+            services.AddCors(opt => {
+                opt.AddPolicy("CorsPolicy", policy => {
+                    policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:4200");
+                });
+            });
+            
             return services;
         }
     }

@@ -8,10 +8,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Data
 {
-    public class ProductRespository : IProductRespository
+    public class ProductRepository : IProductRepository
     {
         private readonly StoreContext _context;
-        public ProductRespository(StoreContext context)
+
+        public ProductRepository(StoreContext context)
         {
             _context = context;
         }
@@ -24,17 +25,18 @@ namespace Infrastructure.Data
         public async Task<Product?> GetProductByIdAsync(int id)
         {
             return await _context.Products
-            .Include(p => p.ProductBrand)
-            .Include(p => p.ProductType)
-            .FirstOrDefaultAsync(p => p.Id == id);
+                .Include(p => p.ProductBrand)
+                .Include(p => p.ProductType)
+                .FirstOrDefaultAsync(p => p.Id == id);
             //.FindAsync(id);
         }
 
         public async Task<IReadOnlyList<Product>> GetProductsAsync()
         {
             return await _context.Products
-            .Include(p => p.ProductBrand)
-            .Include(p => p.ProductType).ToListAsync();
+                .Include(p => p.ProductBrand)
+                .Include(p => p.ProductType)
+                .ToListAsync();
         }
 
         public async Task<IReadOnlyList<ProductType>> GetProductTypesAsync()
