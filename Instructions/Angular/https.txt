@@ -1,0 +1,19 @@
+
+   #  Install mkcert
+      -  Open PowerShell as an Administrator
+      -  Install chocolatey : Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+      -  choco install mkcert
+
+   #  Using mkcert
+      -  client -> create ssl folder, cd ssl :
+         +  mkcert -install
+         +  mkcert localhost
+
+   #  In angular.json
+      -  In "serve", add :
+         +  "options": {
+               "sslCert": "ssl/localhost.pem",
+               "sslKey": "ssl/localhost-key.pem",
+               "ssl": true
+            },
+

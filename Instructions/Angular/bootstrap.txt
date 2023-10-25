@@ -1,0 +1,11 @@
+
+   #  Install bootstrap
+      -  ng add ngx-bootstrap
+
+   #  Install font-awesome
+      -  npm install font-awesome
+
+   #  In angular.json -> styles, add : 
+      -  "node_modules/bootstrap/dist/css/bootstrap.min.css",
+         "node_modules/ngx-bootstrap/datepicker/bs-datepicker.css",
+         "node_modules/font-awesome/css/font-awesome.min.css",
